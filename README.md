@@ -1,2 +1,8 @@
-# neovim_container
-For creating a neovim image to be used as a development container.
+# NeoVim Development Environment
+
+## Building the Image
+
+### Custom NeoVim configuration
+
+
+## Running the Container
