@@ -1,0 +1,131 @@
+# =============================================================== #
+#
+# PERSONAL $HOME/.bashrc FILE for bash-3.0 (or later)
+# Copied from Emmanuel Rouat [no-email] and modified by
+# Jon Schiefelbein
+#
+# Last modified: 29 Nov 2018
+#
+# This file is meant to be modified (hopefully automatically) before
+# being used.  Things like the username will not work until they are
+# modified.
+#
+#  This file is normally read by interactive shells only.
+#+ Here is the place to define your aliases, functions and
+#+ other interactive features like your prompt.
+#
+#  The majority of the code here assumes you are on a GNU
+#  system (most likely a Linux box, some parts assume Ubuntu or CentOS)
+#  and is often based on code found on Usenet or Internet.
+#
+#  See for instance:
+#  http://tldp.org/LDP/abs/html/index.html
+#  http://www.caliban.org/bash
+#  http://www.shelldorado.com/scripts/categories.html
+#  http://www.dotfiles.org
+#
+#  The choice of colors was done for a shell with a dark background
+#  (white on black, or solarized dark), and this is usually also suited
+#  for pure text-mode consoles (no X server available). If you use a
+#  white background, you'll have to do some other choices for readability.
+#
+#  This bashrc was much longer but some functionality was moved to
+#  separate files in the shrc directory, borrowed from
+#  https://github.com/mislav/dotfiles.
+#
+# =============================================================== #
+
+# Use a local drive versus a network drive for home
+# Normally, don't have to do this.  Left as an example.
+# export HOME=/opt/{{username}}
+# cd /opt/{{username}}
+
+# don't put duplicate lines in the history. See bash(1) for more options
+export HISTCONTROL=ignoredups
+
+export EDITOR=vim
+
+# If not running interactively, don't do anything
+[ -z "$PS1" ] && return
+
+#-------------------------------------------------------------
+# Source global definitions (if any)
+#-------------------------------------------------------------
+
+if [ -f /etc/bashrc ]; then
+    . /etc/bashrc   # --> Read /etc/bashrc, if present.
+fi
+
+# ------------------------------------------------------------
+# Load all the external files, separates bashrc into functionality
+# ------------------------------------------------------------
+
+for file in ~/.shrc/*.sh; do
+    source "$file"
+done
+
+# ----------------------------------------------------------------------------
+# Personal PATH and variable settings for various things
+# ----------------------------------------------------------------------------
+
+# =====================================
+# Java Settings
+# =====================================
+
+# Freemind needed JAVA_CMD set to run
+# declare -x JAVA_CMD="/usr/bin/java"
+
+# =====================================
+# Python Settings
+# =====================================
+
+# Miniconda
+. /opt/tools/miniconda3/etc/profile.d/conda.sh
+conda activate dev
+
+# =====================================
+# Ansible Settings
+# =====================================
+
+# Turn off cowsay
+# export ANSIBLE_NOCOWS=1
+
+# =====================================
+# The Fuck is a magnificent app, inspired by a
+# [@liamosaur](https://twitter.com/liamosaur/) tweet,
+# that corrects errors in previous console commands.
+# Install into the python base with `pip install thefuck`
+# =====================================
+
+# eval $(thefuck --alias)
+
+# =====================================
+# Personal Bin in home directory
+# ====================================
+
+# set PATH so it includes user's private bin if it exists
+if [ -d "$HOME/bin" ];
+then
+    PATH="$HOME/bin":$PATH
+fi
+
+# =====================================
+# Ruby Settings
+# =====================================
+
+# Add RVM to PATH for scripting. Make sure this is the
+# last PATH variable change.
+# export PATH="$PATH:$HOME/.rvm/bin"
+
+# =====================================
+# LiquidPrompt
+# =====================================
+
+# Only load Liquid Prompt in interactive shells, not from a script
+# or from scp
+[[ $- = *i* ]] && source ~/.liquidprompt/liquidprompt
+
+# Local Variables:
+# mode:shell-script
+# sh-shell:bash
+# End:

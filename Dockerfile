@@ -8,11 +8,11 @@ FROM ubuntu:22.04
 RUN \
     apt-get update && \
     apt-get upgrade -y && \
-    apt-get install -y expect && \
+    apt-get install -y expect gawk sed && \
     apt-get install -y software-properties-common && \
     apt-get install -y sudo zsh locales locales-all && \
     apt-get install -y build-essential && \
-    apt-get install -y wget curl tmux xsel xclip && \
+    apt-get install -y wget curl tmux xsel xclip ripgrep fzf && \
     apt-get install -y python-is-python3 python3 python3-dev python3-pip && \
     apt-get install -y git && \
     apt-get install -y nodejs npm && \
@@ -42,14 +42,65 @@ RUN \
     pip3 install pynvim flake8 && \
     npm install -g neovim
 
-# Install some Nerd Fonts
+# Install the Nerd Fonts get tool
 RUN \
     git clone https://github.com/ronniedroid/getnf.git && \
     cp getnf/getnf /usr/local/bin && \
     rm -rf /getnf
 
-COPY ./install_fonts.sh /tmp/install_fonts.sh
+# ----------------------------------------------------------------------------
+# USER SETUP
+# ----------------------------------------------------------------------------
+
+# Create a USER
+ARG USERNAME="vulcan"
+ARG PASSWORD=""
+ARG HOME_DIR="/home/${USERNAME}"
+ARG PY_VER="3.11"
+
 RUN \
-    chmod +x /tmp/install_fonts.sh && \
-    /tmp/install_fonts.sh && sleep 5 && \
-    rm -rf /tmp/install_fonts.sh
+    useradd -m -s /bin/bash -G sudo -p $(openssl passwd -1 "${PASSWORD}") ${USERNAME} && \
+    echo "${USERNAME}} ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
+
+COPY ./dotfiles/bashrc /home/${USERNAME}/.bashrc
+COPY ./dotfiles/shrc /home/${USERNAME}/.shrc
+COPY ./dotfiles/tmux.conf /home/${USERNAME}/.tmux.conf
+COPY ./dotfiles/condarc /home/${USERNAME}/.condarc
+COPY ./dotfiles/liquidprompt /home/${USERNAME}/.liquidprompt
+COPY ./scripts/install_fonts.sh /home/${USERNAME}/install_fonts.sh
+
+RUN \
+    chown ${USERNAME}:${USERNAME} /home/${USERNAME}/.bashrc && \
+    chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/.shrc && \
+    chown ${USERNAME}:${USERNAME} /home/${USERNAME}/.tmux.conf && \
+    chown ${USERNAME}:${USERNAME} /home/${USERNAME}/.condarc && \
+    chown -R ${USERNAME}:${USERNAME} /home/${USERNAME}/.liquidprompt && \
+    chown ${USERNAME}:${USERNAME} /home/${USERNAME}/install_fonts.sh && \
+    mkdir -p /opt/tools && \
+    chown -R ${USERNAME}:${USERNAME} /opt/tools && \
+    chmod 755 /home/${USERNAME}/install_fonts.sh
+
+USER ${USERNAME}
+WORKDIR ${HOME_DIR}
+
+# Install Rust via Rustup
+RUN \
+    cd ~ && \
+    curl https://sh.rustup.rs -sSf | sh -s -- -y
+
+# Install Miniconda
+RUN \
+    cd ~ && \
+    wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
+    bash Miniconda3-latest-Linux-x86_64.sh -b -p /opt/tools/miniconda3 && \
+    rm Miniconda3-latest-Linux-x86_64.sh && \
+    /opt/tools/miniconda3/bin/conda create -n dev python=${PY_VER} -y
+
+# Install some Nerd Fonts
+RUN \
+    /home/${USERNAME}/install_fonts.sh
+
+# Install nvim-basic-ide
+RUN \
+    git clone https://github.com/LunarVim/nvim-basic-ide.git ~/.config/nvim && \
+    nvim --headless +LazyUpdate +qa
