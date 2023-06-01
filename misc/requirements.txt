@@ -1,0 +1,23 @@
+# Web Frameworks
+# --------------
+
+# ---- Flask
+Flask >= 2
+
+# ---- Django
+Django >= 4
+
+# ---- FastAPI
+FastAPI >= 0.95
+
+# Command Line Frameworks & Tools
+# -------------------------------
+
+Click >= 8
+Rich >= 10
+Typer >= 0.9
+
+# Data Science
+# ------------
+
+Pandas >= 2
